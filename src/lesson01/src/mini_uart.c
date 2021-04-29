@@ -1,7 +1,7 @@
 #include "utils.h"
 #include "peripherals/mini_uart.h"
 #include "peripherals/gpio.h"
-
+/*This is test*/
 void uart_send ( char c )
 {
 	while(1) {
