@@ -11,6 +11,16 @@ void uart_send ( char c )
 	put32(AUX_MU_IO_REG,c);
 }
 
+void pl011_send(char c)
+{
+	while(1){
+		if(get32(UART_FR)&0x80)		//Bit 7 - Transmit FIFO empty
+			break;	
+	}
+	put32(UART_DR,c);	
+}
+
+
 char uart_recv ( void )
 {
 	while(1) {
@@ -20,11 +30,27 @@ char uart_recv ( void )
 	return(get32(AUX_MU_IO_REG)&0xFF);
 }
 
+char pl011_recv(void)
+{
+	while(1){
+		if(get32(UART_FR)&0x02)		//Bit 1 Data set ready
+	}
+	return(get32(UART_DR)&0xFF);
+}
+
 void uart_send_string(char* str)
 {
 	for (int i = 0; str[i] != '\0'; i ++) {
 		uart_send((char)str[i]);
 	}
+}
+
+void pl011_send_string(char* str)
+{
+	for(int i=0; str[i] != '\0'; i++){
+		pl011_send((char)str[i]);
+	}
+
 }
 
 void uart_init ( void )
@@ -52,4 +78,34 @@ void uart_init ( void )
 	put32(AUX_MU_BAUD_REG,270);             //Set baud rate to 115200
 
 	put32(AUX_MU_CNTL_REG,3);               //Finally, enable transmitter and receiver
+}
+
+void pl011_init(void)
+{
+	/*GPIO setup*/
+	unsigned int selector;
+
+        selector = get32(GPFSEL1);
+        selector &= ~(7<<12);                   // clean gpio14
+        selector |= 2<<12;                      // set alt5 for gpio14
+        selector &= ~(7<<15);                   // clean gpio15
+        selector |= 2<<15;                      // set alt5 for gpio15
+        put32(GPFSEL1,selector);
+
+        put32(GPPUD,0);
+        delay(150);
+        put32(GPPUDCLK0,(1<<14)|(1<<15));
+        delay(150);
+        put32(GPPUDCLK0,0);
+
+	/*PL011 UART setup*/
+	put32(UART_CR,0);			//Disable UART to change UARTLCR_H, UARTIBRD, and UARTFBRD
+						//UARTIBRD, and UARTFBRD first then UARTLCR_H
+	put32(UARTIBRD,26);			//UARTIBRD = integer part of 48MHz/(16*115200)
+	put32(UARTFBRD,3);			//UARTIBRD = (integer part)*64+0.5
+	put32(UART_LCR_H,(1<<6)|(1<<5)|(1<<4)|);//8 bit word length, FIFO enabled,  no parity
+	
+	
+	put32(UART_CR,0x301);			//Enable TX, RX, UART
+
 }
