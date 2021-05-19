@@ -34,6 +34,7 @@ char pl011_recv(void)
 {
 	while(1){
 		if(get32(UART_FR)&0x02)		//Bit 1 Data set ready
+        break;
 	}
 	return(get32(UART_DR)&0xFF);
 }
@@ -85,27 +86,28 @@ void pl011_init(void)
 	/*GPIO setup*/
 	unsigned int selector;
 
-        selector = get32(GPFSEL1);
-        selector &= ~(7<<12);                   // clean gpio14
-        selector |= 2<<12;                      // set alt5 for gpio14
-        selector &= ~(7<<15);                   // clean gpio15
-        selector |= 2<<15;                      // set alt5 for gpio15
-        put32(GPFSEL1,selector);
+    selector = get32(GPFSEL1);
+    selector &= ~(7<<12);                   // clean gpio14
+    selector |= 2<<12;                      // set alt5 for gpio14
+    selector &= ~(7<<15);                   // clean gpio15
+    selector |= 2<<15;                      // set alt5 for gpio15
+    put32(GPFSEL1,selector);
 
-        put32(GPPUD,0);
-        delay(150);
-        put32(GPPUDCLK0,(1<<14)|(1<<15));
-        delay(150);
-        put32(GPPUDCLK0,0);
+    put32(GPPUD,0);
+    delay(150);
+    put32(GPPUDCLK0,(1<<14)|(1<<15));
+    delay(150);
+    put32(GPPUDCLK0,0);
 
 	/*PL011 UART setup*/
-	put32(UART_CR,0);			//Disable UART to change UARTLCR_H, UARTIBRD, and UARTFBRD
-						//UARTIBRD, and UARTFBRD first then UARTLCR_H
-	put32(UARTIBRD,26);			//UARTIBRD = integer part of 48MHz/(16*115200)
-	put32(UARTFBRD,3);			//UARTIBRD = (integer part)*64+0.5
-	put32(UART_LCR_H,(1<<6)|(1<<5)|(1<<4)|);//8 bit word length, FIFO enabled,  no parity
+	put32(UART_IBRD,26);			        // UART_IBRD = integer part of 48MHz/(16*115200)
+	put32(UART_FBRD,3);			            //UART_FBRD = (integer part)*64+0.5
+
+    selector = get32(UART_LCR_H);
+    delector |= (1<<6)|(1<<55);             //8 bits word
+    detector &= ~(1<<1);                    //No parity
+	put32(UART_LCR_H, selector);            //
 	
-	
-	put32(UART_CR,0x301);			//Enable TX, RX, UART
+	put32(UART_CR,0x1);			            //Enable UART
 
 }
