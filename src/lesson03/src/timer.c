@@ -2,20 +2,28 @@
 #include "printf.h"
 #include "peripherals/timer.h"
 
-const unsigned int interval = 200000;
+const unsigned int interval = 33554432;         //~1Hz
 unsigned int curVal = 0;
 
 void timer_init ( void )
 {
-	curVal = get32(TIMER_CLO);
-	curVal += interval;
-	put32(TIMER_C1, curVal);
+    unsigned int selector;
+    selector = interval;
+    selector |= TIMER_LOCAL_INT_EN | TIMER_LOCAL_EN;
+	put32(TIMER_LOCAL_CTL, selector);
 }
 
 void handle_timer_irq( void ) 
 {
-	curVal += interval;
-	put32(TIMER_C1, curVal);
-	put32(TIMER_CS, TIMER_CS_M1);
-	printf("Timer interrupt received\n\r");
+    /*Do stuffs*/                                                      
+    printf("Timer interrupt received\n\r");
+
+    /*Reload the value*/
+    unsigned int selector;
+    selector = interval;
+    selector |= TIMER_LOCAL_INT_EN | TIMER_LOCAL_EN;
+    put32(TIMER_LOCAL_CTL, selector);
+
+    /*Clear interrupt flag*/
+	put32(TIMER_LOCAL_RL, TIMER_LOCAL_INT_CLR);
 }

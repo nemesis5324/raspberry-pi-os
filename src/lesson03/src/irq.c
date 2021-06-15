@@ -38,9 +38,9 @@ void show_invalid_entry_message(int type, unsigned long esr, unsigned long addre
 
 void handle_irq(void)
 {
-	unsigned int irq = get32(IRQ_PENDING_1);
+	unsigned int irq = get32(CORE0_INT_SOURCE);
 	switch (irq) {
-		case (SYSTEM_TIMER_IRQ_1):
+		case (LOCAL_TIMER_INT):
 			handle_timer_irq();
 			break;
 		default:
