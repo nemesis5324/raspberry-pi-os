@@ -16,4 +16,6 @@
 #define AUX_MU_STAT_REG (PBASE+0x00215064)
 #define AUX_MU_BAUD_REG (PBASE+0x00215068)
 
+#define AUX_IRQ_REG     (PBASE+0x00215000)
+
 #endif  /*_P_MINI_UART_H */
